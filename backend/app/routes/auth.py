@@ -11,23 +11,49 @@ from app.deps.auth import get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+# @router.post("/signup")
+# async def signup(user: UserCreate):
+#     """Register a new user."""
+#     existing = await db.users.find_one({"email": user.email})
+#     if existing:
+#         raise HTTPException(status_code=400, detail="User already exists")
+
+#     hashed = hash_password(user.password)
+
+#     result = await db.users.insert_one({
+#         "name": user.name,
+#         "email": user.email,
+#         "password": hashed,
+#     })
+
+#     token = create_access_token({"user_id": str(result.inserted_id)})
+#     return {"access_token": token, "token_type": "bearer"}
+
+
+
+
 @router.post("/signup")
 async def signup(user: UserCreate):
-    """Register a new user."""
     existing = await db.users.find_one({"email": user.email})
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
 
-    hashed = hash_password(user.password)
+    try:
+        hashed = hash_password(user.password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     result = await db.users.insert_one({
         "name": user.name,
         "email": user.email,
-        "password": hashed,
+        "password": hashed
     })
 
     token = create_access_token({"user_id": str(result.inserted_id)})
-    return {"access_token": token, "token_type": "bearer"}
+
+    return {"access_token": token}
+
+
 
 
 @router.post("/login")

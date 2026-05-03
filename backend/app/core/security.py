@@ -10,10 +10,22 @@ from app.core.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def hash_password(password: str) -> str:
-    """Hash a plain password."""
-    return pwd_context.hash(password)
+# def hash_password(password: str) -> str:
+#     """Hash a plain password."""
+#     return pwd_context.hash(password)
 
+def hash_password(password: str) -> str:
+    """
+    Hash a password using bcrypt.
+
+    bcrypt has a strict limit of 72 bytes.
+    We enforce validation instead of silent truncation.
+    """
+
+    if len(password.encode("utf-8")) > 72:
+        raise ValueError("Password too long (max 72 bytes allowed)")
+
+    return pwd_context.hash(password)
 
 def verify_password(password: str, hashed: str) -> bool:
     """Verify password against hash."""
