@@ -4,7 +4,7 @@ Security utilities using Argon2 (modern password hashing).
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from app.core.config import settings
 
@@ -41,3 +41,22 @@ def create_access_token(data: dict) -> str:
     )
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+
+
+
+def decode_token(token: str) -> dict:
+    """
+    Decode JWT token and return payload.
+    Raises error if invalid.
+    """
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+        return payload
+    except JWTError:
+        return {}
